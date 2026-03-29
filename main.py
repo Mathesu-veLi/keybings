@@ -1,27 +1,28 @@
+from utils.keybinds_reader import read_keybinds
+from textual.app import App, ComposeResult
+from textual.widgets import DataTable
+from textual.containers import Container
+from os import getlogin
 
-import shlex
+FILEPATH = f"/home/{getlogin()}/.config/sway/config"
 
-file_path = '/home/veli/.config/sway/config'
+class KeybindsApp(App):
 
-try:
-    with open(file_path, 'r', encoding='utf-8') as sway_config:
-        swayLines = sway_config.read().split("\n")
-        swayKeybinds = []
+    def compose(self) -> ComposeResult:
+        yield Container(DataTable())
 
-        for line in swayLines:
-            lineArgs = line.strip().split()
-            if(lineArgs):
-                if (lineArgs[0] == "bindsym"):
-                        lineArgs.remove(lineArgs[0])
-                        lineArgs = [lineArgs[0], " ".join(lineArgs[1:])]
-                        swayKeybinds.append(lineArgs)                    
+    def on_mount(self) -> None:
+        table = self.query_one(DataTable)
 
-        
-        for keybind in swayKeybinds:
-            for i, arg in enumerate(keybind):
-                if (arg == "-d"):
-                    keybind = [keybind[0], keybind[i+1]]
-            print(keybind)
-except FileNotFoundError:
-    print(f"Error: The file '{file_path}' was not found.")
+        table.add_columns("Key", "Command")
 
+        keybinds = read_keybinds(FILEPATH)
+
+        for key, command in keybinds:
+            table.add_row(key, command)
+
+        table.cursor_type = "row"
+
+if __name__ == "__main__":
+    app = KeybindsApp()
+    app.run()
