@@ -1,6 +1,3 @@
-import shlex
-
-
 def read_keybinds(file_path: str):
     try:
         with open(file_path, 'r', encoding='utf-8') as sway_config:
